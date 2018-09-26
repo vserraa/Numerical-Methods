@@ -18,12 +18,11 @@ class Solver:
 		for i in range(1, self.nsteps+1):
 			y = y + self.h*self.f(t, y)
 			t = t + self.h
-			ans.append([i, y])
+			ans.append([t, y])
 
-		ans = np.array(ans)
 		return ans
 
-	def inverseEuler(self):
+	def inverse_euler(self):
 		ans = []
 		ans.append([self.t0, self.y0])
 		t, y = self.t0, self.y0
@@ -31,12 +30,11 @@ class Solver:
 			k = y + self.h*self.f(t, y)
 			y = y + self.h*self.f(t + self.h, k)
 			t = t + self.h
-			ans.append([i, y])
+			ans.append([t, y])
 
-		ans = np.array(ans)
 		return ans		
 
-	def improvedEuler(self):
+	def improved_euler(self):
 		ans = []
 		ans.append([self.t0, self.y0])
 		t, y = self.t0, self.y0
@@ -44,12 +42,11 @@ class Solver:
 			k = y + self.h*self.f(t, y)
 			y = y + 0.5*self.h*(self.f(t + self.h, k) + self.f(t, y))
 			t = t + self.h
-			ans.append([i, y])
+			ans.append([t, y])
 
-		ans = np.array(ans)
 		return ans		
 
-	def rungeKutta(self):
+	def runge_kutta(self):
 		ans = []
 		t, y = self.t0, self.y0
 		ans.append([t, y])
@@ -60,9 +57,26 @@ class Solver:
 			k4 = f(t + h, y + h*k3)
 			y = y + h*(k1 + 2*k2 + 2*k3 + k4)/6
 			t = t + h
-			ans.append([i, y])
+			ans.append([t, y])
 
-		ans = np.array(ans)
+		return ans
+
+	def adam_bashforth_by_euler(self, order):
+		ans = self.euler()
+	
+		for i in range(order, self.nsteps+1):
+			if order == 5:
+				ans[i][1] = ans[i-1][1] + self.h*((1901/720)*self.f(ans[i-1][0], ans[i-1][1]) - (1387/360)*self.f(ans[i-2][0], ans[i-2][1])
+					+ (109/30)*self.f(ans[i-3][0], ans[i-3][1]) - (637/360)*self.f(ans[i-4][0], ans[i-4][1])
+					+ (251/720)*self.f(ans[i-5][0], ans[i-5][1]))
+				ans[i][0] = ans[i-1][0] + h
+			elif order == 6:
+				ans[i][1] = ans[i-1][1] + self.h*(4277*self.f(ans[i-1][0], ans[i-1][1]) - 2641*3*self.f(ans[i-2][0], ans[i-2][1])
+					+ 4991*2*self.f(ans[i-3][0], ans[i-3][1]) - 3649*2*self.f(ans[i-4][0], ans[i-4][1])
+					+ 959*3*self.f(ans[i-5][0], ans[i-5][1]) - 95*5*self.f(ans[i-6][0], ans[i-6][1]))/1440
+
+				ans[i][0] = ans[i-1][0] + h
+		
 		return ans
 
 #Main part of the code
@@ -85,20 +99,25 @@ for line in f:
 		pts = solver.euler()
 		print("Metodo de Euler")
 	elif method == "euler_inverso":
-		pts = solver.inverseEuler()
+		pts = solver.inverse_euler()
 		print("Metodo de Euler Inverso")
 	elif method == "euler_aprimorado":
-		pts = solver.improvedEuler()
+		pts = solver.improved_euler()
 		print("Metodo de Euler Aprimorado")
 	elif method == "runge_kutta":
-		pts = solver.rungeKutta()
+		pts = solver.runge_kutta()
 		print("Metodo de Runge-Kutta")
+	elif method == "adam_bashforth_by_euler":
+		order = int(entrada[6])
+		print("Metodo de Adam-Bashforth por Euler")
+		pts = solver.adam_bashforth_by_euler(order);
 
-	for x, y in pts:
-		print("%d %lf" %(x, y))
+	for [x, y] in pts:
+		format(y, '.12g')
+		print("%lf %.10lf" %(x, y))
 
 	#ploting the solution
-	plt.plot(pts[:, 0], pts[:, 1], ls = '-', color = 'black', linewidth = 1)
-	plt.show()
+	#plt.plot(pts[:, 0], pts[:, 1], ls = '-', color = 'black', linewidth = 1)
+	#plt.show()
 
 	print("\n")
