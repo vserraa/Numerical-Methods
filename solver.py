@@ -172,7 +172,7 @@ for line in f:
 		format(y, '.12g')
 		print("%lf %.10lf" %(x, y))
 
-	ploting the solution
+#	ploting the solution
 	plt.plot(pts[:, 0], pts[:, 1], ls = '-', color = 'black', linewidth = 1)
 	plt.show()
 
