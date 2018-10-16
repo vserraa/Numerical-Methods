@@ -32,7 +32,15 @@ class Solver:
 			[19087.0/60480.0, 2713.0/2520.0, -15487.0/20160.0, 586.0/945.0, -6737.0/20160.0, 263.0/2520.0, -863.0/60480.0],
 			[5257.0/17280.0, 139849.0/120960.0, -4511.0/4480.0, 123133.0/120960.0, -88547.0/120960.0, 1537.0/4480.0, -11351.0/120960.0, 275.0/24192.0]
 		]
-
+		self.coef_inv = [
+			[1],
+			[1],
+			[2.0/3.0, 4.0/3.0, -1.0/3.0],
+			[6.0/11.0, 18.0/11.0, -9.0/11.0, 2.0/11.0],
+			[12.0/25.0, 48.0/25.0, -36.0/25.0, 16.0/25.0, -3.0/25.0],
+			[60.0/137.0, 300.0/137.0, -300.0/137.0, 200.0/137.0, -75.0/137.0, 12.0/137.0],
+			[60.0/147.0, 360.0/147.0, -450.0/147.0, 400.0/147.0, -255.0/147.0, 72.0/147.0, -10.0/147.0]		
+		]
 
 	def get_ab(self, ans, idx, order):
 		value = ans[idx-1][1]
@@ -43,8 +51,18 @@ class Solver:
 	def get_am(self, ans, idx, order):
 		value = ans[idx-1][1]
 		ans[idx][1] = self.get_ab(ans, idx, order-1)
+		ans[idx][0] = ans[idx-1][0] + self.h
 		for i in range(0, order):
 			value += self.h*self.coef_am[order][i]*self.f(ans[idx-i][0], ans[idx-i][1])
+		return value 
+	
+	def	get_inv(self, ans, idx, order):
+		ans[idx][1] = self.get_ab(ans, idx, order)
+		ans[idx][0] = ans[idx-1][0] + self.h
+		value = self.coef_inv[order][0]*self.h*self.f(ans[idx][0], ans[idx][1])
+		for i in range (1, order+1):
+			value += self.coef_inv[order][i]*ans[idx-i][1]
+			
 		return value
 
 	def euler(self):
@@ -140,6 +158,28 @@ class Solver:
 			ans[i][0] = ans[i-1][0] + h
 		
 		return ans
+	
+	def backward_diff(self, order, method):
+		if method == 'euler':
+			ans = self.euler()
+		elif method == 'inverse euler':
+			ans = self.inverse_euler()
+		elif method == 'improved euler':
+			ans = self.improved_euler()
+		elif method == 'runge kutta':
+			ans = self.runge_kutta()
+		elif method == 'list':
+			ans = self.inital_points
+
+		h, f = self.h, self.f
+		for i in range(order, self.nsteps+1):
+			if len(ans) == i:
+				ans.append([0, 0])
+		
+			ans[i][1] = self.get_inv(ans, i, order)
+			ans[i][0] = ans[i-1][0] + h
+			
+		return ans
 
 #Main part of the code
 #We wish to find an approximate solution to the equation dy/dt = f(t, y)
@@ -219,6 +259,26 @@ for line in f:
 		order = int(entrada[6])
 		print("Metodo de Adam-Multon por Runge Kutta")
 		pts = solver.adam_multon_by_method(order, 'runge kutta')
+	elif method == 'formula_inversa':
+		print("Metodo Formula Inversa de Diferenciacao")
+		pts = solver.backward_diff(order, 'list')
+	elif method == 'formula_inversa_by_euler':
+		order = int(entrada[6])
+		print("order is %d" %order)
+		print("Metodo Formula Inversa de Diferenciacao por Euler")
+		pts = solver.backward_diff(order-1, 'euler')
+	elif method == 'formula_inversa_by_euler_inverso':
+		order = int(entrada[6])
+		print("Metodo Formula Inversa de Diferenciacao por Euler Inverso")
+		pts = solver.backward_diff(order-1, 'inverse euler')
+	elif method == 'formula_inversa_by_euler_aprimorado':
+		order = int(entrada[6])
+		print("Metodo Formula Inversa de Diferenciacao por Euler Aprimorado")
+		pts = solver.backward_diff(order-1, 'improved euler')
+	elif method == 'formula_inversa_by_runge_kutta':
+		order = int(entrada[6])
+		print("Metodo Formula Inversa de Diferenciacao por Runge Kutta")
+		pts = solver.backward_diff(order-1, 'runge kutta')
 
 	
 	for [x, y] in pts:
