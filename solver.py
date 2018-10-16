@@ -11,6 +11,41 @@ class Solver:
 		self.h = h
 		self.nsteps = nsteps
 		self.inital_points = inital_points;
+		self.coef_ab = [
+			[1],
+			[1],
+			[3.0/2.0, 1.0/2.0],
+			[23.0/12.0, -4.0/3.0, 5.0/12.0],
+			[55.0/24.0, -59.0/24.0, 37.0/24.0, -3.0/8.0],
+			[1901.0/720.0, -1387.0/360.0, 109.0/30.0, -637.0/360.0, 251.0/720.0],
+			[4277.0/1440.0, -2641.0/480.0, 4991.0/720.0, -3649.0/720.0, 959.0/480.0, -95.0/288.0],
+			[198721.0/60480.0, 18367.0/2520.0, 235183.0/20160.0, 10754.0/945.0, 135713.0/20160.0, 5603.0/2520.0, 19087.0/60480.0],
+			[16083.0/4480.0, 1152169.0/120960.0, 242653.0/13440.0, 296053.0/13440.0, 2102243.0/120960.0, 115747.0/13440.0, 32863.0/13440.0, 5257.0/17280.0]
+		]
+		self.coef_am = [
+			[1],
+			[1.0/2.0, 1.0/2.0],
+			[5.0/12.0, 2.0/3.0, -1.0/12.0],
+			[3.0/8.0, 19.0/24.0, -5.0/24.0, 1.0/24.0],
+			[251.0/720.0, 323.0/360.0, -11.0/30.0, 53.0/360.0, 19.0/720.0],
+			[95.0/288.0, 1427.0/1440.0, -133.0/240.0, 241.0/720.0, -173.0/1440.0, 3.0/760.0],
+			[19087.0/60480.0, 2713.0/2520.0, -15487.0/20160.0, 586.0/945.0, -6737.0/20160.0, 263.0/2520.0, -863.0/60480.0],
+			[5257.0/17280.0, 139849.0/120960.0, -4511.0/4480.0, 123133.0/120960.0, -88547.0/120960.0, 1537.0/4480.0, -11351.0/120960.0, 275.0/24192.0]
+		]
+
+
+	def get_ab(self, ans, idx, order):
+		value = ans[idx-1][1]
+		for i in range(1, order+1):
+			value += (self.h)*(self.coef_ab[order][i-1])*self.f(ans[idx-i][0], ans[idx-i][1])
+		return value	
+
+	def get_am(self, ans, idx, order):
+		value = ans[idx-1][1]
+		ans[idx][1] = self.get_ab(ans, idx, order-1)
+		for i in range(0, order):
+			value += self.h*self.coef_am[order][i]*self.f(ans[idx-i][0], ans[idx-i][1])
+		return value
 
 	def euler(self):
 		ans = []
@@ -67,7 +102,7 @@ class Solver:
 			ans = self.euler()
 		elif method == 'inverse euler':
 			ans = self.inverse_euler()
-		elif method == 'improved_euler':
+		elif method == 'improved euler':
 			ans = self.improved_euler()
 		elif method == 'runge kutta':
 			ans = self.runge_kutta()
@@ -78,32 +113,30 @@ class Solver:
 		for i in range(order, self.nsteps+1):
 			if len(ans) == i:
 				ans.append([0, 0])
+	
+			ans[i][1] = self.get_ab(ans, i, order)
+			ans[i][0] = ans[i-1][0] + h
+		
+		return ans
 
-			if order == 2:
-				ans[i][1] = ans[i-1][1] + h*((3/2)*f(ans[i-1][0], ans[i-1][1]) - (1/2)*f(ans[i-2][0], ans[i-2][1]))
-			elif order == 3:
-				ans[i][1] = ans[i-1][1] + h*((23/12)*f(ans[i-1][0], ans[i-1][1]) - (4/3)*f(ans[i-2][0], ans[i-2][1])
-					+ (5/12)*f(ans[i-3][0], ans[i-3][1]))
-			elif order == 4:
-				ans[i][1] = ans[i-1][1] + h*((55/24)*f(ans[i-1][0], ans[i-1][1]) - (59/24)*f(ans[i-2][0], ans[i-2][1])
-					+ (37/24)*f(ans[i-3][0], ans[i-3][1]) - (3/8)*f(ans[i-4][0], ans[i-4][1]))		
-			elif order == 5:
-				ans[i][1] = ans[i-1][1] + h*((1901/720)*f(ans[i-1][0], ans[i-1][1]) - (1387/360)*f(ans[i-2][0], ans[i-2][1])
-					+ (109/30)*f(ans[i-3][0], ans[i-3][1]) - (637/360)*f(ans[i-4][0], ans[i-4][1]) + (251/720)*f(ans[i-5][0], ans[i-5][1]))
-			elif order == 6:
-				ans[i][1] = ans[i-1][1] + h*(4277*f(ans[i-1][0], ans[i-1][1]) - 2641*3*f(ans[i-2][0], ans[i-2][1])
-					+ 4991*2*f(ans[i-3][0], ans[i-3][1]) - 3649*2*f(ans[i-4][0], ans[i-4][1])
-					+ 959*3*f(ans[i-5][0], ans[i-5][1]) - 95*5*f(ans[i-6][0], ans[i-6][1]))/1440
-			elif order == 7: 
-				ans[i][1] = ans[i-1][1] + h*((198721/60480)*f(ans[i-1][0], ans[i-1][1]) - (18367/2520)*f(ans[i-2][0], ans[i-2][1])
-					+ (235183/20160)*f(ans[i-3][0], ans[i-3][1]) - (10754/945)*f(ans[i-4][0], ans[i-4][1]) + (135713/20160)*f(ans[i-5][0], ans[i-5][1])
-					- (5603/2520)*f(ans[i-6][0], ans[i-6][1]) + (19087/60480)*f(ans[i-7][0], ans[i-7][1]))	
-			elif order == 8:
-				ans[i][1] = ans[i-1][1] + h*((16083/4480)*f(ans[i-1][0], ans[i-1][1]) - (1152169/120960)*f(ans[i-2][0], ans[i-2][1])
-					+ (242653/13440)*f(ans[i-3][0], ans[i-3][1]) - (296053/13440)*f(ans[i-4][0], ans[i-4][1]) + (2102243/120960)*f(ans[i-5][0], ans[i-5][1])
-					- (115747/13440)*f(ans[i-6][0], ans[i-6][1]) + (32863/13440)*f(ans[i-7][0], ans[i-7][1])
-					- (5257/17280)*f(ans[i-8][0], ans[i-8][1]))
+	def adam_multon_by_method(self, order, method):
+		if method == 'euler':
+			ans = self.euler()
+		elif method == 'inverse euler':
+			ans = self.inverse_euler()
+		elif method == 'improved euler':
+			ans = self.improved_euler()
+		elif method == 'runge kutta':
+			ans = self.runge_kutta()
+		elif method == 'list':
+			ans = self.inital_points
 
+		h, f = self.h, self.f
+		for i in range(order-1, self.nsteps+1):
+			if len(ans) == i:
+				ans.append([0, 0])
+	
+			ans[i][1] = self.get_am(ans, i, order)
 			ans[i][0] = ans[i-1][0] + h
 		
 		return ans
@@ -167,13 +200,34 @@ for line in f:
 	elif method == 'adam_bashforth':
 		print("Metodo de Adam-Bashforth")
 		pts = solver.adam_bashforth_by_method(order, 'list')
+	elif method == 'adam_multon':
+		print("Metodo de Adam-Multon")
+		pts = solver.adam_multon_by_method(order, 'list')
+	elif method == 'adam_multon_by_euler':
+		order = int(entrada[6])
+		print("Metodo de Adam-Multon por Euler")
+		pts = solver.adam_multon_by_method(order, 'euler')
+	elif method == 'adam_multon_by_euler_inverso':
+		order = int(entrada[6])
+		print("Metodo de Adam-Multon por Euler Inverso")
+		pts = solver.adam_multon_by_method(order, 'inverse euler')
+	elif method == 'adam_multon_by_euler_aprimorado':
+		order = int(entrada[6])
+		print("Metodo de Adam-Multon por Euler Aprimorado")
+		pts = solver.adam_multon_by_method(order, 'improved euler')
+	elif method == 'adam_multon_by_runge_kutta':
+		order = int(entrada[6])
+		print("Metodo de Adam-Multon por Runge Kutta")
+		pts = solver.adam_multon_by_method(order, 'runge kutta')
+
 	
 	for [x, y] in pts:
 		format(y, '.12g')
 		print("%lf %.10lf" %(x, y))
 
-#	ploting the solution
-	plt.plot(pts[:, 0], pts[:, 1], ls = '-', color = 'black', linewidth = 1)
-	plt.show()
+#########################	ploting the solution	##############################
+#	plt.plot(pts[:, 0], pts[:, 1], ls = '-', color = 'black', linewidth = 1)
+#	plt.show()
+##################################################################################
 
 	print("\n")
