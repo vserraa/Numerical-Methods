@@ -34,7 +34,7 @@ class Solver:
 		]
 		self.coef_inv = [
 			[1],
-			[1],
+			[1, 1],
 			[2.0/3.0, 4.0/3.0, -1.0/3.0],
 			[6.0/11.0, 18.0/11.0, -9.0/11.0, 2.0/11.0],
 			[12.0/25.0, 48.0/25.0, -36.0/25.0, 16.0/25.0, -3.0/25.0],
@@ -55,15 +55,6 @@ class Solver:
 		for i in range(0, order):
 			value += self.h*self.coef_am[order][i]*self.f(ans[idx-i][0], ans[idx-i][1])
 		return value 
-	
-	def	get_inv(self, ans, idx, order):
-		ans[idx][1] = self.get_ab(ans, idx, order)
-		ans[idx][0] = ans[idx-1][0] + self.h
-		value = self.coef_inv[order][0]*self.h*self.f(ans[idx][0], ans[idx][1])
-		for i in range (1, order+1):
-			value += self.coef_inv[order][i]*ans[idx-i][1]
-			
-		return value
 
 	def euler(self):
 		ans = []
@@ -159,6 +150,16 @@ class Solver:
 		
 		return ans
 	
+
+	def	get_inv(self, ans, idx, order):
+		ans[idx][1] = self.get_ab(ans, idx, order)
+		ans[idx][0] = ans[idx-1][0] + self.h
+		value = self.coef_inv[order][0]*self.h*self.f(ans[idx][0], ans[idx][1])
+		for i in range (1, order+1):
+			value += self.coef_inv[order][i]*ans[idx-i][1]
+			
+		return value
+
 	def backward_diff(self, order, method):
 		if method == 'euler':
 			ans = self.euler()
@@ -261,10 +262,9 @@ for line in f:
 		pts = solver.adam_multon_by_method(order, 'runge kutta')
 	elif method == 'formula_inversa':
 		print("Metodo Formula Inversa de Diferenciacao")
-		pts = solver.backward_diff(order, 'list')
+		pts = solver.backward_diff(order-1, 'list')
 	elif method == 'formula_inversa_by_euler':
 		order = int(entrada[6])
-		print("order is %d" %order)
 		print("Metodo Formula Inversa de Diferenciacao por Euler")
 		pts = solver.backward_diff(order-1, 'euler')
 	elif method == 'formula_inversa_by_euler_inverso':
@@ -280,14 +280,15 @@ for line in f:
 		print("Metodo Formula Inversa de Diferenciacao por Runge Kutta")
 		pts = solver.backward_diff(order-1, 'runge kutta')
 
-	
+	print("y(%.2f) = %.2f" %(pts[0][0], pts[0][1]))
+	print("h = %.2f" %h)
 	for [x, y] in pts:
-		format(y, '.12g')
-		print("%lf %.10lf" %(x, y))
+		print("%d %.10lf" %(10*x, y))
 
-#########################	ploting the solution	##############################
-#	plt.plot(pts[:, 0], pts[:, 1], ls = '-', color = 'black', linewidth = 1)
-#	plt.show()
-##################################################################################
+#########################	ploting the solution	#############################
+#			uncomment the folowing lines to plot solution 						#
+#	plt.plot(pts[:, 0], pts[:, 1], ls = '-', color = 'black', linewidth = 1)	#
+#	plt.show()																	#	
+#################################################################################
 
 	print("\n")
