@@ -28,7 +28,7 @@ class Solver:
 			[5.0/12.0, 2.0/3.0, -1.0/12.0],
 			[3.0/8.0, 19.0/24.0, -5.0/24.0, 1.0/24.0],
 			[251.0/720.0, 323.0/360.0, -11.0/30.0, 53.0/360.0, 19.0/720.0],
-			[95.0/288.0, 1427.0/1440.0, -133.0/240.0, 241.0/720.0, -173.0/1440.0, 3.0/760.0],
+			[95.0/288.0, 1427.0/1440.0, -133.0/240.0, 241.0/720.0, -173.0/1440.0, 3.0/160.0],
 			[19087.0/60480.0, 2713.0/2520.0, -15487.0/20160.0, 586.0/945.0, -6737.0/20160.0, 263.0/2520.0, -863.0/60480.0],
 			[5257.0/17280.0, 139849.0/120960.0, -4511.0/4480.0, 123133.0/120960.0, -88547.0/120960.0, 1537.0/4480.0, -11351.0/120960.0, 275.0/24192.0]
 		]
@@ -47,14 +47,6 @@ class Solver:
 		for i in range(1, order+1):
 			value += (self.h)*(self.coef_ab[order][i-1])*self.f(ans[idx-i][0], ans[idx-i][1])
 		return value	
-
-	def get_am(self, ans, idx, order):
-		value = ans[idx-1][1]
-		ans[idx][1] = self.get_ab(ans, idx, order-1)
-		ans[idx][0] = ans[idx-1][0] + self.h
-		for i in range(0, order):
-			value += self.h*self.coef_am[order][i]*self.f(ans[idx-i][0], ans[idx-i][1])
-		return value 
 
 	def euler(self):
 		ans = []
@@ -128,6 +120,14 @@ class Solver:
 		
 		return ans
 
+	def get_am(self, ans, idx, order):
+		value = ans[idx-1][1]
+		ans[idx][1] = self.get_ab(ans, idx, order)
+		ans[idx][0] = ans[idx-1][0] + self.h
+		for i in range(0, order+1):
+			value += self.h*self.coef_am[order][i]*self.f(ans[idx-i][0], ans[idx-i][1])
+		return value 
+
 	def adam_multon_by_method(self, order, method):
 		if method == 'euler':
 			ans = self.euler()
@@ -141,7 +141,7 @@ class Solver:
 			ans = self.inital_points
 
 		h, f = self.h, self.f
-		for i in range(order-1, self.nsteps+1):
+		for i in range(order, self.nsteps+1):
 			if len(ans) == i:
 				ans.append([0, 0])
 	
@@ -243,23 +243,23 @@ for line in f:
 		pts = solver.adam_bashforth_by_method(order, 'list')
 	elif method == 'adam_multon':
 		print("Metodo de Adam-Multon")
-		pts = solver.adam_multon_by_method(order, 'list')
+		pts = solver.adam_multon_by_method(order-1, 'list')
 	elif method == 'adam_multon_by_euler':
 		order = int(entrada[6])
 		print("Metodo de Adam-Multon por Euler")
-		pts = solver.adam_multon_by_method(order, 'euler')
+		pts = solver.adam_multon_by_method(order-1, 'euler')
 	elif method == 'adam_multon_by_euler_inverso':
 		order = int(entrada[6])
 		print("Metodo de Adam-Multon por Euler Inverso")
-		pts = solver.adam_multon_by_method(order, 'inverse euler')
+		pts = solver.adam_multon_by_method(order-1, 'inverse euler')
 	elif method == 'adam_multon_by_euler_aprimorado':
 		order = int(entrada[6])
 		print("Metodo de Adam-Multon por Euler Aprimorado")
-		pts = solver.adam_multon_by_method(order, 'improved euler')
+		pts = solver.adam_multon_by_method(order-1, 'improved euler')
 	elif method == 'adam_multon_by_runge_kutta':
 		order = int(entrada[6])
 		print("Metodo de Adam-Multon por Runge Kutta")
-		pts = solver.adam_multon_by_method(order, 'runge kutta')
+		pts = solver.adam_multon_by_method(order-1, 'runge kutta')
 	elif method == 'formula_inversa':
 		print("Metodo Formula Inversa de Diferenciacao")
 		pts = solver.backward_diff(order-1, 'list')
