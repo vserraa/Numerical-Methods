@@ -19,6 +19,6 @@ To execute, follow these steps:
 
 3. Execute the command "python solver.py" in the cmd
 
-4. If you wish to plot the solutions, uncomment the lines specified in the end of the code
+4. If you do not wish to plot the solutions, comment the lines specified in the end of the code
 
 OBS: if you want the output in a separete file use the command "python solver.py > out"

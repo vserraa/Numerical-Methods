@@ -286,9 +286,10 @@ for line in f:
 		print("%d %.10lf" %(10*x, y))
 
 #########################	ploting the solution	#############################
-#			uncomment the folowing lines to plot solution 						#
-#	plt.plot(pts[:, 0], pts[:, 1], ls = '-', color = 'black', linewidth = 1)	#
-#	plt.show()																	#	
+#######			comment the folowing lines to not plot solution 		   ######			
+	toplot = np.array(pts)
+	plt.plot(toplot[:, 0], toplot[:, 1], ls = '-', color = 'black', linewidth = 1)	
+	plt.show()																		
 #################################################################################
 
 	print("\n")
