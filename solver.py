@@ -282,8 +282,10 @@ for line in f:
 
 	print("y(%.2f) = %.2f" %(pts[0][0], pts[0][1]))
 	print("h = %.2f" %h)
+	i = 0
 	for [x, y] in pts:
-		print("%d %.10lf" %(10*x, y))
+		print("%d %.10lf" %(i, y))
+		i += 1
 
 #########################	ploting the solution	#############################
 #######			comment the folowing lines to not plot solution 		   ######			
