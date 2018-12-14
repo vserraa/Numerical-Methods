@@ -201,7 +201,7 @@ for line in f:
 		for i in range(1, 1 + order):
 			ini_pts.append([t0 + (i-1)*h, float(entrada[i])])
 	else:	
-		t0, y0 = float(entrada[1]), float(entrada[2])
+		y0, t0 = float(entrada[1]), float(entrada[2])
 		h = float(entrada[3])
 		nsteps = int(entrada[4])
 		expr = sympify(entrada[5])
